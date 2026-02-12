@@ -5,6 +5,13 @@
 Este roteiro reúne exemplos do DALToolbox e de bibliotecas amplamente usadas, alinhados aos slides de `3-Preprocessamento.pdf`.  
 Cada chunk indica o **slide** correspondente.
 
+## Como ler este roteiro
+O fluxo segue a ordem natural de um pipeline de dados:
+1. limpeza e tratamento;
+2. transformação e redução;
+3. amostragem e preparação final para modelagem.
+Ao final de cada seção, compare o efeito da transformação no dado resultante.
+
 ## Configuração
 
 
@@ -16,9 +23,12 @@ library(ggplot2)
 
 ## Limpeza de dados
 
+Primeiro, avaliamos duas estratégias para valores ausentes: remover linhas incompletas ou imputar valores.
+Na prática, a escolha depende de volume de perda e risco de viés.
+
 
 ``` r
-# Slide 6: Como lidar com dados ausentes (remoção)
+# Slides 6: Como lidar com dados ausentes (remoção)
 iris <- datasets::iris
 iris.na <- iris
 iris.na$Sepal.Length[2] <- NA
@@ -37,9 +47,11 @@ head(iris.na.omit)
 ## 7          4.6         3.4          1.4         0.3  setosa
 ```
 
+Agora comparamos com imputação por mediana, que preserva o tamanho da amostra e tende a ser robusta a outliers.
+
 
 ``` r
-# Slide 6: Imputação simples (média/mediana)
+# Slides 6: Imputação simples (média/mediana)
 iris_na <- iris
 iris_na$Sepal.Length[c(2, 10, 25)] <- NA
 tr_imp <- imputation_simple(method = "median")
@@ -53,9 +65,11 @@ summary(iris_imputed$Sepal.Length)
 ##   4.300   5.125   5.800   5.862   6.400   7.900
 ```
 
+Em seguida, tratamos outliers por regra de boxplot (IQR), útil quando não há suposição forte de normalidade.
+
 
 ``` r
-# Slide 10: Remoção de outliers (boxplot)
+# Slides 10: Remoção de outliers (boxplot)
 tr_out_box <- outliers_boxplot()
 tr_out_box <- fit(tr_out_box, iris)
 iris.clean <- transform(tr_out_box, iris)
@@ -72,9 +86,11 @@ head(iris.clean)
 ## 6          5.4         3.9          1.7         0.4  setosa
 ```
 
+A alternativa abaixo usa regra gaussiana (3 sigma), mais adequada quando a distribuição é aproximadamente normal.
+
 
 ``` r
-# Slide 8–10: Remoção de outliers (regra 3σ)
+# Slides 8–10: Remoção de outliers (regra 3σ)
 tr_out_gauss <- outliers_gaussian()
 tr_out_gauss <- fit(tr_out_gauss, iris)
 iris.clean <- transform(tr_out_gauss, iris)
@@ -91,9 +107,11 @@ head(iris.clean)
 ## 6          5.4         3.9          1.7         0.4  setosa
 ```
 
+Fechamos a seção com suavização LOESS para reduzir ruído local sem impor forma linear global.
+
 
 ``` r
-# Slide 8: Suavização por regressão (LOESS)
+# Slides 8: Suavização por regressão (LOESS)
 set.seed(123)
 x <- seq(1, 100)
 y <- sin(x / 10) + rnorm(100, sd = 0.2)
@@ -107,6 +125,8 @@ ggplot(dat, aes(x, y)) +
 ![plot of chunk loess](fig/3-Preprocessamento/loess-1.png)
 
 ## Redução e representação
+
+Aqui passamos de limpeza para representação: reduzir dimensionalidade e criar variáveis mais informativas.
 
 
 ``` r
@@ -128,6 +148,8 @@ head(iris.pca)
 ## 6 2.975946 -5.707321  setosa
 ```
 
+Após PCA, avaliamos seleção por correlação para remover redundância entre atributos.
+
 
 ``` r
 # Slides 23–24: Seleção de atributos (correlação alta)
@@ -141,9 +163,11 @@ setdiff(names(iris), names(iris_fs))
 ## [1] "Petal.Length"
 ```
 
+Na sequência, geramos atributos derivados para enriquecer sinal sem coletar novos dados.
+
 
 ``` r
-# Slide 26: Geração de features
+# Slides 26: Geração de features
 tr_feat <- feature_generation(
   Sepal.Area = Sepal.Length * Sepal.Width,
   Petal.Area = Petal.Length * Petal.Width,
@@ -163,9 +187,11 @@ head(iris_feat)
 ## 6          5.4         3.9          1.7         0.4  setosa      21.06       0.68    1.384615
 ```
 
+Por fim, agregamos por classe para obter visão resumida (nível analítico mais alto).
+
 
 ``` r
-# Slide 27: Agregação de dados
+# Slides 27: Agregação de dados
 tr_agg <- aggregation(
   "Species",
   mean_sepal = mean(Sepal.Length),
@@ -184,9 +210,11 @@ transform(tr_agg, iris)
 
 ## Transformação e normalização
 
+Normalização é crítica quando modelos dependem de distância ou escala dos atributos.
+
 
 ``` r
-# Slide 29: Normalização Min-Max
+# Slides 29: Normalização Min-Max
 tr_minmax <- minmax()
 tr_minmax <- fit(tr_minmax, iris)
 ndata <- transform(tr_minmax, iris)
@@ -203,9 +231,11 @@ summary(ndata)
 ##  Max.   :1.0000   Max.   :1.0000   Max.   :1.0000   Max.   :1.00000
 ```
 
+O Z-score centraliza e escala por desvio padrão, útil quando queremos comparar variáveis em unidades padronizadas.
+
 
 ``` r
-# Slide 29: Normalização Z-Score
+# Slides 29: Normalização Z-Score
 tr_zscore <- zscore()
 tr_zscore <- fit(tr_zscore, iris)
 ndata <- transform(tr_zscore, iris)
@@ -222,9 +252,11 @@ summary(ndata)
 ##  Max.   : 2.48370   Max.   : 3.0805   Max.   : 1.7799   Max.   : 1.7064
 ```
 
+O comparativo visual abaixo ajuda a decidir qual transformação preserva melhor a estrutura que interessa ao problema.
+
 
 ``` r
-# Slide 30: Comparação visual de normalização
+# Slides 30: Comparação visual de normalização
 tr_minmax_cmp <- minmax()
 tr_minmax_cmp <- fit(tr_minmax_cmp, iris)
 iris_mm <- transform(tr_minmax_cmp, iris)
@@ -252,6 +284,8 @@ ggplot(vals_long, aes(value, fill = method)) +
 
 ## Discretização e suavização
 
+Nesta etapa, convertemos variável contínua em faixas para facilitar regras, árvores e relatórios interpretáveis.
+
 
 ``` r
 # Slides 33–35: Binning por intervalos
@@ -266,6 +300,8 @@ table(sl.bi)
 ## 5.32842105263158 6.73272727272727 
 ##               95               55
 ```
+
+Aqui, os bins têm frequências semelhantes (quantis), o que tende a equilibrar representatividade entre faixas.
 
 
 ``` r
@@ -282,9 +318,11 @@ table(sl.bi)
 ##      80      70
 ```
 
+A discretização por clustering busca cortes orientados por estrutura dos dados, não apenas por posição/rank.
+
 
 ``` r
-# Slide 35: Discretização via clustering
+# Slides 35: Discretização via clustering
 tr_smooth_cluster <- smoothing_cluster(n = 2)
 tr_smooth_cluster <- fit(tr_smooth_cluster, iris$Sepal.Length)
 sl.bi <- transform(tr_smooth_cluster, iris$Sepal.Length)
@@ -298,6 +336,8 @@ table(sl.bi)
 ```
 
 ## Hierarquias e mapeamento categórico
+
+Quando o alvo é modelagem supervisionada, variáveis categóricas geralmente precisam de codificação explícita.
 
 
 ``` r
@@ -316,6 +356,8 @@ head(iris_cm)
 ## 5             1                 0                0
 ## 6             1                 0                0
 ```
+
+Hierarquias conceituais simplificam interpretação ao trocar valores contínuos por níveis semânticos.
 
 
 ``` r
@@ -337,6 +379,8 @@ table(iris_h$Sepal.Length.Level)
 
 ## Amostragem e balanceamento
 
+A qualidade da divisão treino/teste impacta diretamente avaliação e generalização.
+
 
 ``` r
 # Slides 40–41: Amostragem aleatória
@@ -349,6 +393,8 @@ table(split_random$train$Species)
 ##     setosa versicolor  virginica 
 ##         39         37         44
 ```
+
+Amostragem estratificada preserva proporção de classes, importante quando a distribuição é desigual.
 
 
 ``` r
@@ -363,9 +409,11 @@ table(split_strat$train$Species)
 ##         40         40         40
 ```
 
+O exemplo seguinte mostra o efeito de reposição na variabilidade da amostra.
+
 
 ``` r
-# Slide 42: Amostragem com e sem reposição
+# Slides 42: Amostragem com e sem reposição
 srswor <- sample_simple(size = 10, replace = FALSE, seed = 123)
 srswr <- sample_simple(size = 10, replace = TRUE, seed = 123)
 srswor <- transform(srswor, iris$Sepal.Length)
@@ -385,9 +433,11 @@ srswr
 ##  [1] 4.3 5.0 7.7 4.4 4.3 7.7 5.5 5.5 5.5 6.1
 ```
 
+No caso de cluster sampling, a unidade amostral passa a ser o grupo, não o registro individual.
+
 
 ``` r
-# Slide 43: Amostragem por cluster (exemplo simples)
+# Slides 43: Amostragem por cluster (exemplo simples)
 tr_sample_cluster <- sample_cluster("Species", n_clusters = 2, seed = 123)
 cluster_sample <- transform(tr_sample_cluster, iris)
 table(cluster_sample$Species)
@@ -398,6 +448,8 @@ table(cluster_sample$Species)
 ##     setosa versicolor  virginica 
 ##         50          0         50
 ```
+
+Finalizamos com balanceamento de classes, essencial para evitar viés em classificadores com dados desbalanceados.
 
 
 ``` r
@@ -435,4 +487,5 @@ table(iris_up$Species)
 - Little, R. J. A., Rubin, D. B. (2002). *Statistical Analysis with Missing Data*.
 - Tukey, J. W. (1977). *Exploratory Data Analysis*.
 - Satopaa, V. et al. (2011). Finding a “Kneedle” in a Haystack. *ICDCS*.
+
 

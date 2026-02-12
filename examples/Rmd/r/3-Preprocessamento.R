@@ -4,7 +4,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 library(daltoolbox)
 library(ggplot2)
 
-# Slide 6: Como lidar com dados ausentes (remoção)
+# Slides 6: Como lidar com dados ausentes (remoção)
 iris <- datasets::iris
 iris.na <- iris
 iris.na$Sepal.Length[2] <- NA
@@ -12,7 +12,7 @@ tr_na <- na_removal()
 iris.na.omit <- transform(tr_na, iris.na)
 head(iris.na.omit)
 
-# Slide 6: Imputação simples (média/mediana)
+# Slides 6: Imputação simples (média/mediana)
 iris_na <- iris
 iris_na$Sepal.Length[c(2, 10, 25)] <- NA
 tr_imp <- imputation_simple(method = "median")
@@ -20,19 +20,19 @@ tr_imp <- fit(tr_imp, iris_na)
 iris_imputed <- transform(tr_imp, iris_na)
 summary(iris_imputed$Sepal.Length)
 
-# Slide 10: Remoção de outliers (boxplot)
+# Slides 10: Remoção de outliers (boxplot)
 tr_out_box <- outliers_boxplot()
 tr_out_box <- fit(tr_out_box, iris)
 iris.clean <- transform(tr_out_box, iris)
 head(iris.clean)
 
-# Slide 8–10: Remoção de outliers (regra 3σ)
+# Slides 8–10: Remoção de outliers (regra 3σ)
 tr_out_gauss <- outliers_gaussian()
 tr_out_gauss <- fit(tr_out_gauss, iris)
 iris.clean <- transform(tr_out_gauss, iris)
 head(iris.clean)
 
-# Slide 8: Suavização por regressão (LOESS)
+# Slides 8: Suavização por regressão (LOESS)
 set.seed(123)
 x <- seq(1, 100)
 y <- sin(x / 10) + rnorm(100, sd = 0.2)
@@ -55,7 +55,7 @@ tr_fs <- fit(tr_fs, iris)
 iris_fs <- transform(tr_fs, iris)
 setdiff(names(iris), names(iris_fs))
 
-# Slide 26: Geração de features
+# Slides 26: Geração de features
 tr_feat <- feature_generation(
   Sepal.Area = Sepal.Length * Sepal.Width,
   Petal.Area = Petal.Length * Petal.Width,
@@ -64,7 +64,7 @@ tr_feat <- feature_generation(
 iris_feat <- transform(tr_feat, iris)
 head(iris_feat)
 
-# Slide 27: Agregação de dados
+# Slides 27: Agregação de dados
 tr_agg <- aggregation(
   "Species",
   mean_sepal = mean(Sepal.Length),
@@ -73,19 +73,19 @@ tr_agg <- aggregation(
 )
 transform(tr_agg, iris)
 
-# Slide 29: Normalização Min-Max
+# Slides 29: Normalização Min-Max
 tr_minmax <- minmax()
 tr_minmax <- fit(tr_minmax, iris)
 ndata <- transform(tr_minmax, iris)
 summary(ndata)
 
-# Slide 29: Normalização Z-Score
+# Slides 29: Normalização Z-Score
 tr_zscore <- zscore()
 tr_zscore <- fit(tr_zscore, iris)
 ndata <- transform(tr_zscore, iris)
 summary(ndata)
 
-# Slide 30: Comparação visual de normalização
+# Slides 30: Comparação visual de normalização
 tr_minmax_cmp <- minmax()
 tr_minmax_cmp <- fit(tr_minmax_cmp, iris)
 iris_mm <- transform(tr_minmax_cmp, iris)
@@ -120,7 +120,7 @@ tr_smooth_freq <- fit(tr_smooth_freq, iris$Sepal.Length)
 sl.bi <- transform(tr_smooth_freq, iris$Sepal.Length)
 table(sl.bi)
 
-# Slide 35: Discretização via clustering
+# Slides 35: Discretização via clustering
 tr_smooth_cluster <- smoothing_cluster(n = 2)
 tr_smooth_cluster <- fit(tr_smooth_cluster, iris$Sepal.Length)
 sl.bi <- transform(tr_smooth_cluster, iris$Sepal.Length)
@@ -148,7 +148,7 @@ table(split_random$train$Species)
 split_strat <- train_test(sample_stratified("Species"), iris)
 table(split_strat$train$Species)
 
-# Slide 42: Amostragem com e sem reposição
+# Slides 42: Amostragem com e sem reposição
 srswor <- sample_simple(size = 10, replace = FALSE, seed = 123)
 srswr <- sample_simple(size = 10, replace = TRUE, seed = 123)
 srswor <- transform(srswor, iris$Sepal.Length)
@@ -156,7 +156,7 @@ srswr <- transform(srswr, iris$Sepal.Length)
 srswor
 srswr
 
-# Slide 43: Amostragem por cluster (exemplo simples)
+# Slides 43: Amostragem por cluster (exemplo simples)
 tr_sample_cluster <- sample_cluster("Species", n_clusters = 2, seed = 123)
 cluster_sample <- transform(tr_sample_cluster, iris)
 table(cluster_sample$Species)
